@@ -64,9 +64,11 @@ else
 fi
 
 # --- push loop (never exits; reconnects with backoff) --------------------------
+# Never log the URL itself — it embeds the publish password.
+SAFE_URL=$(printf '%s' "$CLOUD_RTSP_URL" | sed -E 's#(rtsp://[^:]+:)[^@]+@#\1(redacted)@#')
 BACKOFF=1
 while :; do
-    log "pushing $VIDEO_DEVICE -> $CLOUD_RTSP_URL"
+    log "pushing $VIDEO_DEVICE -> $SAFE_URL"
     # shellcheck disable=SC2086
     ffmpeg -hide_banner -loglevel warning $INPUT \
         -an $ENC -g $((RATE * 4)) -f rtsp -rtsp_transport tcp "$CLOUD_RTSP_URL"

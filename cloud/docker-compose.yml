@@ -10,6 +10,7 @@ services:
     restart: unless-stopped
     ports:
       - "${RTSP_PORT:-8554}:8554"   # RTSP (Pi push in, perception read out)
+      - "${HLS_PORT:-8888}:8888"    # HLS browser viewer (no player install)
     volumes:
       - ./mediamtx.yml:/mediamtx.yml:ro
     env_file:

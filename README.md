@@ -47,7 +47,22 @@ run-cloud.sh         # cloud launcher: up | down | status | logs
 
 ## Bring-up
 
-Cloud first (EC2 security group must allow `8554/tcp` from the Pi):
+### Brand-new Pi 3: one command
+
+Docker first (once per Pi): `curl -fsSL https://get.docker.com | sh`,
+then log out/in (docker group) and reboot. Then:
+
+```bash
+docker run -d --name thinclient-streamer --restart unless-stopped \
+  --device /dev/video0 --group-add 44 \
+  -e CLOUD_RTSP_URL=rtsp://pi:PASSWORD@<EC2-PUBLIC-DNS>:8554/usbcam \
+  ghcr.io/necrosyth/thinclient-streamer:latest
+```
+
+No clone, no build, no env file — image is prebuilt (arm64) and updates
+ship via `:latest`. Logs: `docker logs -f thinclient-streamer`.
+
+### Cloud first (EC2 security group must allow `8554/tcp` from the Pi):
 
 ```bash
 cp cloud/.env.example cloud/.env   # set RTSP_PUBLISH_USER / RTSP_PUBLISH_PASS

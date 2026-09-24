@@ -1,0 +1,27 @@
+name: thinclient-pi
+
+# Single container. Captures the USB cam, pushes H.264 over RTSP to the cloud.
+# Nothing is recorded, nothing is processed here.
+services:
+  streamer:
+    build:
+      context: ..
+      dockerfile: pi/Dockerfile
+    image: thinclient-streamer:local
+    container_name: thinclient-streamer
+    restart: unless-stopped
+    devices:
+      - "${VIDEO_DEVICE:-/dev/video0}:/dev/video0"
+    group_add:
+      - "44"  # host `video` gid on Ubuntu — lets the container open /dev/video0
+    env_file:
+      - path: ../pi/.env
+        required: false
+    environment:
+      VIDEO_DEVICE: /dev/video0
+      VIDEO_SIZE: ${VIDEO_SIZE:-1280x720}
+      FPS: ${FPS:-15}
+      BITRATE: ${BITRATE:-1200k}
+      INPUT_FORMAT: ${INPUT_FORMAT:-mjpeg}
+      CLOUD_RTSP_URL: ${CLOUD_RTSP_URL:-}
+      TZ: Asia/Kolkata

@@ -1,0 +1,17 @@
+# MediaMTX receiver — accepts the Pi's RTSP push on `usbcam` and re-serves it
+# to the perception pipeline at rtsp://<host>:8554/usbcam. Live only.
+logLevel: info
+rtspAddress: :8554
+rtspTransports: [tcp]
+
+# Only the Pi may publish; anyone on the host network may read (perception).
+authInternalUsers:
+  - user: ${RTSP_PUBLISH_USER:-pi}
+    pass: ${RTSP_PUBLISH_PASS:-changeme}
+    permissions: [{ action: publish, path: usbcam }]
+  - user: any
+    permissions: [{ action: read }]
+
+paths:
+  usbcam:
+    record: false

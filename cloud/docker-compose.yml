@@ -1,0 +1,22 @@
+name: thinclient-cloud
+
+# Single container. Receives the Pi's RTSP push and serves it locally as
+# rtsp://media:8554/usbcam — the exact format the perception pipeline ingests.
+# Nothing is recorded.
+services:
+  receiver:
+    image: bluenviron/mediamtx:1.21.1
+    container_name: thinclient-receiver
+    restart: unless-stopped
+    ports:
+      - "${RTSP_PORT:-8554}:8554"   # RTSP (Pi push in, perception read out)
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml:ro
+    env_file:
+      - path: ../cloud/.env
+        required: false
+    environment:
+      MTX_RTSPADDRESS: ":8554"
+      RTSP_PUBLISH_USER: ${RTSP_PUBLISH_USER:-pi}
+      RTSP_PUBLISH_PASS: ${RTSP_PUBLISH_PASS:-changeme}
+      TZ: Asia/Kolkata

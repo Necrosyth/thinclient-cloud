@@ -17,6 +17,9 @@ services:
         required: false
     environment:
       MTX_RTSPADDRESS: ":8554"
-      RTSP_PUBLISH_USER: ${RTSP_PUBLISH_USER:-pi}
-      RTSP_PUBLISH_PASS: ${RTSP_PUBLISH_PASS:-changeme}
+      # Pi publisher = auth entry 1 (entry 0 is the static anon reader in yml).
+      MTX_AUTHINTERNALUSERS_1_USER: ${RTSP_PUBLISH_USER:-pi}
+      MTX_AUTHINTERNALUSERS_1_PASS: ${RTSP_PUBLISH_PASS:-changeme}
+      MTX_AUTHINTERNALUSERS_1_PERMISSIONS_0_ACTION: publish
+      MTX_AUTHINTERNALUSERS_1_PERMISSIONS_0_PATH: usbcam
       TZ: Asia/Kolkata

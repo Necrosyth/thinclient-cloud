@@ -1,18 +1,18 @@
 # MediaMTX receiver — accepts the Pi's RTSP push on `usbcam` and re-serves it
 # to the perception pipeline at rtsp://<host>:8554/usbcam. Live only.
+#
+# NOTE: MediaMTX does NOT expand ${VAR} inside this file (only in runOn* hooks).
+# Secrets arrive via MTX_ environment overrides (see cloud/docker-compose.yml):
+# entry 0 below is the static anonymous reader; the Pi publisher is injected
+# as entry 1 (MTX_AUTHINTERNALUSERS_1_USER/PASS/PERMISSIONS_*).
 logLevel: info
 rtspAddress: :8554
 rtspTransports: [tcp]
 
-# Only the Pi may publish; anyone on the host network may read (perception).
-# NOTE: plain ${VAR} only — MediaMTX does not expand ${VAR:-default}.
-# Defaults live in cloud/docker-compose.yml (compose resolves them).
 authInternalUsers:
-  - user: ${RTSP_PUBLISH_USER}
-    pass: ${RTSP_PUBLISH_PASS}
-    permissions: [{ action: publish, path: usbcam }]
   - user: any
-    permissions: [{ action: read }]
+    permissions:
+      - action: read
 
 paths:
   usbcam:

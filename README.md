@@ -33,13 +33,15 @@ run-pi.sh            # Pi launcher: up | down | status | logs
 run-cloud.sh         # cloud launcher: up | down | status | logs
 ```
 
-## Pi 3 notes (Ubuntu 24.04 LTS, arm64)
+## Pi 3 notes (Ubuntu 24.04 LTS, arm64, 1 GB RAM)
 
-- A Pi 3 CPU **cannot** software-encode 720p H.264 in real time. `stream.sh`
-  uses the Pi's hardware H.264 encoder (`h264_v4l2m2m`, via `bcm2835-codec`)
-  when present — 1280x720@15 default.
-- If no HW encoder is found it falls back to `libx264 ultrafast` at
-  640x480@10 so the little CPU survives. Override with `VIDEO_SIZE`/`FPS`.
+- RAM is a non-issue: the streamer uses ~30 MB. The constraint is CPU.
+- A Pi 3 CPU **cannot** software-encode 720p H.264 in real time, so the image
+  **auto-detects a Pi 3** and lightens the software fallback: 10 fps,
+  960x540, 2 encoder threads, ~700 kbit/s. Pi 4/5 keep full 720p@15.
+  Force it with `PROFILE=pi3` (or `full`) — see `pi/.env.example`.
+- If the kernel offers the hardware encoder (`h264_v4l2m2m`), it is used on
+  any Pi — cheapest path, no tuning needed.
 - MJPEG capture (`input_format mjpeg`) is assumed — true for nearly all USB
   webcams. If yours only does YUYV, drop that flag in `stream.sh`.
 - Install docker on the Pi: `curl -fsSL https://get.docker.com | sh`,

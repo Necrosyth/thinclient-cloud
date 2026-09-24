@@ -48,13 +48,18 @@ if ffmpeg -hide_banner -loglevel error -f lavfi -i testsrc=size=128x128:rate=5:d
     ENC="-vf format=yuv420p -c:v h264_v4l2m2m -b:v $BITRATE"
     SIZE="$VIDEO_SIZE"
     RATE="$FPS"
+    OUT_RATE="$FPS"
     log "encoder: h264_v4l2m2m (hardware) ${SIZE}@${RATE} ${BITRATE}"
 else
-    # Pi 3 CPU fallback — keep it small or frames will lag behind live.
-    ENC="-c:v libx264 -preset ultrafast -tune zerolatency -b:v 800k"
-    SIZE="640x480"
-    RATE="10"
-    log "encoder: libx264 ultrafast (software fallback) ${SIZE}@${RATE} — consider HW encode"
+    # Pi 3 CPU fallback. IMPORTANT: request a size+fps the cam REALLY offers
+    # (this ROG cam has no 640x480 MJPEG mode — asking for it silently keeps
+    # 720p@30, which then melts the CPU). Capture native 720p, encode 15fps
+    # ultrafast: roughly half the cost of full-rate software 720p.
+    ENC="-c:v libx264 -preset ultrafast -tune zerolatency -b:v 1000k"
+    SIZE="1280x720"
+    RATE="30"
+    OUT_RATE="15"
+    log "encoder: libx264 ultrafast (software fallback) in=${SIZE}@${RATE} out=${OUT_RATE}fps — consider HW encode"
 fi
 
 if [ -n "$INPUT_FORMAT" ]; then
@@ -71,7 +76,7 @@ while :; do
     log "pushing $VIDEO_DEVICE -> $SAFE_URL"
     # shellcheck disable=SC2086
     ffmpeg -hide_banner -loglevel warning $INPUT \
-        -an $ENC -g $((RATE * 4)) -f rtsp -rtsp_transport tcp "$CLOUD_RTSP_URL"
+        -an -r "$OUT_RATE" $ENC -g $((OUT_RATE * 4)) -f rtsp -rtsp_transport tcp "$CLOUD_RTSP_URL"
     rc=$?
     log "ffmpeg exited rc=$rc; retrying in ${BACKOFF}s"
     sleep "$BACKOFF"

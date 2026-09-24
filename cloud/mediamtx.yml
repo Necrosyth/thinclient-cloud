@@ -5,9 +5,11 @@ rtspAddress: :8554
 rtspTransports: [tcp]
 
 # Only the Pi may publish; anyone on the host network may read (perception).
+# NOTE: plain ${VAR} only — MediaMTX does not expand ${VAR:-default}.
+# Defaults live in cloud/docker-compose.yml (compose resolves them).
 authInternalUsers:
-  - user: ${RTSP_PUBLISH_USER:-pi}
-    pass: ${RTSP_PUBLISH_PASS:-changeme}
+  - user: ${RTSP_PUBLISH_USER}
+    pass: ${RTSP_PUBLISH_PASS}
     permissions: [{ action: publish, path: usbcam }]
   - user: any
     permissions: [{ action: read }]

@@ -39,8 +39,12 @@ while [ ! -e "$VIDEO_DEVICE" ]; do
     sleep 2
 done
 
-# --- pick encoder -------------------------------------------------------------
-if ffmpeg -hide_banner -encoders 2>/dev/null | grep -q "h264_v4l2m2m"; then
+# --- pick encoder (functional probe, not just --encoders) ----------------------
+# h264_v4l2m2m is compiled into ffmpeg everywhere, but it only works when the
+# kernel exposes a V4L2 mem2mem encode node (e.g. /dev/video11 on Pi kernels).
+# A 1s testsrc encode proves the whole path opens before we commit to it.
+if ffmpeg -hide_banner -loglevel error -f lavfi -i testsrc=size=128x128:rate=5:duration=1 \
+        -c:v h264_v4l2m2m -f null - 2>/dev/null; then
     ENC="-vf format=yuv420p -c:v h264_v4l2m2m -b:v $BITRATE"
     SIZE="$VIDEO_SIZE"
     RATE="$FPS"
